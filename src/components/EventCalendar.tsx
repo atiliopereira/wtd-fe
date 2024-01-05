@@ -10,6 +10,8 @@ import enUS from "date-fns/locale/en-US"
 
 import "react-big-calendar/lib/css/react-big-calendar.css"
 
+import EventInfoModal from './EventInfoModal';
+import { set } from 'date-fns';
 
 const locales = {
   "en-US": enUS,
@@ -23,22 +25,31 @@ const localizer = dateFnsLocalizer({
   locales,
 })
 
-export interface EventInfo extends Event {
+export interface IEventInfo extends Event {
     _id: string
     description: string
     start: Date
     end: Date
+    location: string
+    status: string
 }
 
 
 function EventCalendar() {
-    const [events, setEvents] = React.useState<EventInfo[]>([]);
+    const [currentEvent, setCurrentEvent] = React.useState<IEventInfo | null>(null);
+    const [eventInfoModal, setEventInfoModal] = React.useState<boolean>(false);
+    const [events, setEvents] = React.useState<IEventInfo[]>([]);
+
+    const handleSelectEvent = (event: IEventInfo) => {
+        setCurrentEvent(event);
+        setEventInfoModal(true);
+    }
 
     React.useEffect(() => {
         fetch("http://localhost:8000/api/v1/events/")
             .then(res => res.json())
             .then(data => {
-                data.forEach((event: EventInfo) => {
+                data.forEach((event: IEventInfo) => {
                     event.start = new Date(event.start);
                     event.end = new Date(event.end);
                 });
@@ -49,9 +60,15 @@ function EventCalendar() {
 
     return (
         <div> 
+            <EventInfoModal
+                open={eventInfoModal}
+                handleClose={() => setEventInfoModal(false)}
+                currentEvent={currentEvent as IEventInfo}
+            />
             <Calendar
             localizer={localizer}
             events={events}
+            onSelectEvent={handleSelectEvent}
             startAccessor="start"
             endAccessor="end"
             defaultView="week"

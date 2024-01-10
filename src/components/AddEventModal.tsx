@@ -1,6 +1,8 @@
 import { Dispatch, SetStateAction } from "react";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
 import React from "react";
+import LocationMap from "./AddLocationPickerEventModal";
+import { LatLngExpression } from "leaflet";
 
 
 interface EventFormData {
@@ -34,6 +36,13 @@ const AddEventModal = ({ open, handleClose, fetchEvents }: IProps) => {
         end: new Date(),
         tags: [],
     });
+
+    const onSelectLocation = (location: LatLngExpression) => {
+        setEventFormData({
+            ...eventFormData,
+            location: location.toString(),
+        })
+    }
 
     const onClose = () => handleClose()
 
@@ -91,15 +100,7 @@ const AddEventModal = ({ open, handleClose, fetchEvents }: IProps) => {
                             value={eventFormData.description}
                             onChange={onChange}
                         />
-                        <TextField
-                            margin="dense"
-                            id="location"
-                            label="Location"
-                            type="text"
-                            fullWidth
-                            value={eventFormData.location}
-                            onChange={onChange}
-                        />
+                        <LocationMap onSetLocation={onSelectLocation} />
                     </Box>
             </DialogContent>
             <DialogActions>

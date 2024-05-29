@@ -9,8 +9,8 @@ interface EventFormData {
     title: string
     description: string
     location: string
-    start: Date
-    end: Date
+    start: string
+    end: string
     tags: string[]
 }
 
@@ -32,31 +32,52 @@ const AddEventModal = ({ open, handleClose, fetchEvents }: IProps) => {
         title: "",
         description: "",
         location: "",
-        start: new Date(),
-        end: new Date(),
+        start: new Date().toISOString().slice(0, 16),
+        end: new Date().toISOString().slice(0, 16),
         tags: [],
     });
 
     const onSelectLocation = (location: LatLngExpression) => {
         setEventFormData({
             ...eventFormData,
-            location: location.toString(),
-        })
-    }
+            location: location.toString(), 
+        });
+    };
 
+    const onSelectStartDate = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setEventFormData({
+        ...eventFormData,
+        start: event.target.value,
+      });
+    };
+
+    const onSelectEndDate = (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (event.target === null) {
+        return;
+      }
+      setEventFormData({
+        ...eventFormData,
+        end: event.target.value,
+      });
+    };
+    
     const onClose = () => handleClose()
 
     const onChange = (e: { target: { id: any; value: any; }; }) => {
         setEventFormData({ ...eventFormData, [e.target.id]: e.target.value });
-    }
+    };
 
     const onAddEvent = () => {
-        fetch("http://localhost:8000/api/v1/events/", {
+        fetch("http://localhost:9000/api/v1/events/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(eventFormData),
+            body: JSON.stringify({
+                ...eventFormData,
+                start: new Date(eventFormData.start).toISOString(),
+                end: new Date(eventFormData.end).toISOString(),
+            }),
         })
             .then(res => res.json())
             .then(data => {
@@ -65,8 +86,8 @@ const AddEventModal = ({ open, handleClose, fetchEvents }: IProps) => {
                     title: "",
                     description: "",
                     location: "",
-                    start: new Date(),
-                    end: new Date(),
+                    start: new Date(eventFormData.start).toISOString().slice(0, 16),
+                    end: new Date(eventFormData.end).toISOString().slice(0, 16),
                     tags: [],
                 });
                 handleClose();
@@ -99,6 +120,20 @@ const AddEventModal = ({ open, handleClose, fetchEvents }: IProps) => {
                             fullWidth
                             value={eventFormData.description}
                             onChange={onChange}
+                        />
+                        <TextField
+                            id="start"
+                            label="Start Date"
+                            type="datetime-local"
+                            value={eventFormData.start}
+                            onChange={onSelectStartDate}
+                        />    
+                        <TextField
+                            id="end"
+                            label="End Date"
+                            type="datetime-local"
+                            value={eventFormData.end}
+                            onChange={onSelectEndDate}
                         />
                         <LocationMap onSetLocation={onSelectLocation} />
                     </Box>

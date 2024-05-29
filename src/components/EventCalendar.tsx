@@ -50,7 +50,7 @@ function EventCalendar() {
     }
 
     const fetchEvents = () => {
-        fetch("http://localhost:8000/api/v1/events/")
+        fetch("http://localhost:9000/api/v1/events/")
         .then(res => res.json())
         .then(data => {
             data.forEach((event: IEventInfo) => {
